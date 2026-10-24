@@ -1,0 +1,17 @@
+services:
+  checkin:
+    build: .
+    image: nikki4-webcheckin:latest
+    container_name: nikki4-webcheckin
+
+    env_file:
+      - .env
+
+    # One-shot job: exits as soon as the check-in (and redemption) is done.
+    restart: "no"
+
+    # Raise it if Chromium ever crashes on render-heavy pages.
+    shm_size: "1g"
+
+    volumes:
+      - ./artifacts:/app/artifacts
