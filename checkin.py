@@ -508,15 +508,51 @@ def gift_catalog(driver) -> list[dict]:
     return catalog
 
 
+def dom_usage(driver) -> dict:
+    """Read "(已兌換 / 上限)" from each card -- the API's record endpoint is unconfirmed."""
+    usage = {}
+    try:
+        cards = driver.find_elements(By.CSS_SELECTOR, ".gift-big, .gift-small")
+    except WebDriverException:
+        return usage
+
+    for card in cards:
+        try:
+            text = norm(card.text)
+        except (StaleElementReferenceException, WebDriverException):
+            continue
+        match = re.search(r"\((\d+)\s*/\s*(\d+)\)", text)
+        if not match:
+            continue
+        name = ""
+        for paragraph in card.find_elements(By.CSS_SELECTOR, "p"):
+            candidate = norm(paragraph.text)
+            if candidate and not candidate.startswith("每月"):
+                name = candidate
+                break
+        if name:
+            usage[name] = int(match.group(1))
+    return usage
+
+
 def plan_redemptions(catalog: list[dict], credit: int, signed_days: int, streak: int | None) -> list[dict]:
     """Walk the priority list and spend points greedily."""
     remaining = credit
     plan = []
+    consumed: set = set()
 
     def lookup(name: str):
+        # Exact match first: "體力" must not resolve to "幻券體力禮包".
+        for item in catalog:
+            if norm(str(item.get("name", ""))) == name and item.get("id") not in consumed:
+                return item
         for item in catalog:
             item_name = norm(str(item.get("name", "")))
-            if name in item_name or item_name in name:
+            if item_name.startswith(name) and item.get("id") not in consumed:
+                return item
+        for item in catalog:
+            item_name = norm(str(item.get("name", "")))
+            if name in item_name and item.get("id") not in consumed:
                 return item
         return None
 
@@ -534,6 +570,7 @@ def plan_redemptions(catalog: list[dict], credit: int, signed_days: int, streak:
         if wanted.get("requires_streak"):
             if (streak or 0) < wanted["requires_streak"]:
                 log(f"Skip {name}: needs a {wanted['requires_streak']}-day streak, have {streak}")
+                consumed.add(item.get("id"))
                 continue
 
         while used < limit and remaining >= cost:
@@ -541,6 +578,7 @@ def plan_redemptions(catalog: list[dict], credit: int, signed_days: int, streak:
             used += 1
             remaining -= cost
 
+        consumed.add(item.get("id"))
         if used >= limit:
             log(f"Skip {name}: monthly limit reached ({used}/{limit})")
 
@@ -564,13 +602,14 @@ def redeem(driver, plan: list[dict]) -> int:
             continue
 
         time.sleep(1.5)
-        dismiss_popups(driver)
+        # Read the confirmation popup before closing it.
         text = page_text(driver)
         if "兌換成功" in text or "恭喜" in text:
             redeemed += 1
             log(f"Redeemed {entry['name']} ({entry['cost']} points)")
         else:
             log(f"Redeem result for {entry['name']} unclear")
+        dismiss_popups(driver)
         time.sleep(1.0)
     return redeemed
 
@@ -658,6 +697,13 @@ def main(argv: list[str] | None = None) -> int:
             log("Could not read the gift catalog")
             save_artifacts(driver, "gift-catalog")
             return EXIT_FAIL
+
+        # The cards show "(used / limit)", which is more reliable than guessing
+        # at the record endpoint.
+        for name, used in dom_usage(driver).items():
+            for item in catalog:
+                if norm(str(item.get("name", ""))) == name:
+                    item["_used"] = max(int(item.get("_used") or 0), used)
 
         streak = None
         data = api(driver, "/checkin/index")
