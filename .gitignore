@@ -40,3 +40,7 @@ pip-unpack-*
 pip-build-tracker-*
 pip-install-*
 pip-ephem-wheel-cache-*
+
+# keep the project icon
+!assets/
+!assets/*.png
