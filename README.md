@@ -93,7 +93,7 @@ python -m venv .venv
 
 | 變數 | 預設 | 說明 |
 |---|---|---|
-| `NIKKI_EMAIL`（或 `USERNAME`） | 必填 | 登入信箱 |
+| `NIKKI_EMAIL`（或 `EMAIL`） | 必填 | 登入信箱 |
 | `NIKKI_PASSWORD`（或 `PASSWORD`） | 必填 | 登入密碼 |
 | `REDEEM` | `true` | `false` = 只簽到、不兌換 |
 | `DRY_RUN` | `false` | 只印出兌換計畫，不真的點 |

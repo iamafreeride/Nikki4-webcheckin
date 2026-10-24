@@ -55,7 +55,9 @@ GIFT_URL = os.getenv("GIFT_URL", f"{BASE}/checkin/gift?activity_id=0")
 #: The activity API the page itself talks to.
 API_BASE = os.getenv("API_BASE", "https://nikki4fbtw.papegames.com/api/v1/activity/0")
 
-EMAIL = os.getenv("NIKKI_EMAIL") or os.getenv("USERNAME") or ""
+#: Credentials.  ``USERNAME`` is deliberately *not* accepted: on Windows it is
+#: always set to the OS account name and would be picked up by accident.
+EMAIL = os.getenv("NIKKI_EMAIL") or os.getenv("EMAIL") or ""
 PASSWORD = os.getenv("NIKKI_PASSWORD") or os.getenv("PASSWORD") or ""
 
 BROWSER = os.getenv("BROWSER", "chrome").strip().lower()
