@@ -97,32 +97,6 @@ cp .env.example .env    # 填入 NIKKI_EMAIL / NIKKI_PASSWORD
 docker compose up --build
 ```
 
-### A2. 發佈到 Docker Hub
-
-每次 push 到 `main`，GitHub Actions 會建置 `linux/amd64` + `linux/arm64` 映像並推送。
-在你的 repo 加兩個 Secrets（**Settings → Secrets and variables → Actions**）：
-
-| Secret | 內容 |
-|---|---|
-| `DOCKERHUB_USERNAME` | Docker Hub 帳號（`iamafreeride`） |
-| `DOCKERHUB_TOKEN` | Docker Hub **Access Token**（不是密碼；Account settings → Security → New Access Token，權限選 Read & Write） |
-
-沒設定這兩個 Secret 時，workflow 只推 GHCR、不會失敗。
-若你已在 Docker Hub 用「Automated build」關聯這個 GitHub repo，就不要兩邊同時建置，擇一即可。
-
-本機手動推（已 `docker login` 的話）：
-
-```bash
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t iamafreeride/nikki4-webcheckin:latest --push .
-```
-
-Docker Hub 頁面的說明與圖標（Hub 不會自動讀 GitHub 的 README，所以要推一次）：
-
-```powershell
-./scripts/dockerhub-description.ps1 -Username iamafreeride -Token dckr_pat_xxx
-```
-
 ### B. Windows 本機（不用 Docker）
 
 1. 安裝 Python 3.9+（勾選 *Add python.exe to PATH*）。
