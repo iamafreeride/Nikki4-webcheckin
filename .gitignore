@@ -34,3 +34,9 @@ Thumbs.db
 
 # scratch
 _*.txt
+
+pip-metadata-*
+pip-unpack-*
+pip-build-tracker-*
+pip-install-*
+pip-ephem-wheel-cache-*
