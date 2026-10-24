@@ -1,6 +1,18 @@
-# Nikki4-webcheckin
+<p align="center">
+  <img src="https://raw.githubusercontent.com/iamafreeride/Nikki4-webcheckin/main/assets/icon.png" alt="閃耀暖暖" width="112" height="112">
+</p>
 
-《閃耀暖暖》官網「簽到有禮」每日自動**簽到**＋**兌換獎勵**。
+<h1 align="center">Nikki4-webcheckin</h1>
+
+<p align="center">
+  《閃耀暖暖》官網「簽到有禮」每日自動<b>簽到</b>＋<b>兌換獎勵</b>
+</p>
+
+<p align="center">
+  <a href="https://hub.docker.com/r/iamafreeride/nikki4-webcheckin"><img alt="Docker Hub" src="https://img.shields.io/docker/pulls/iamafreeride/nikki4-webcheckin?style=for-the-badge"></a>
+  <a href="https://github.com/iamafreeride/Nikki4-webcheckin/actions"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/iamafreeride/Nikki4-webcheckin/docker.yml?style=for-the-badge&label=build"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/iamafreeride/Nikki4-webcheckin?style=for-the-badge"></a>
+</p>
 
 用真正的手機模擬（iPhone viewport 390×844、DPR 3、觸控、iPhone UA）開啟
 <https://nikki4.com.tw/checkin/sign?activity_id=0>，登入、關閉「歡迎登入」彈窗、按「簽到」，
@@ -54,7 +66,18 @@
 
 ## 快速開始
 
-### A. Docker
+### A. Docker（直接拉映像，最快）
+
+```bash
+docker pull iamafreeride/nikki4-webcheckin:latest
+
+docker run --rm \
+  -e NIKKI_EMAIL=you@example.com \
+  -e NIKKI_PASSWORD='your-password' \
+  iamafreeride/nikki4-webcheckin:latest
+```
+
+自己 build（改過程式才需要）：
 
 ```bash
 git clone https://github.com/iamafreeride/Nikki4-webcheckin.git
@@ -72,6 +95,32 @@ docker run --rm \
 ```bash
 cp .env.example .env    # 填入 NIKKI_EMAIL / NIKKI_PASSWORD
 docker compose up --build
+```
+
+### A2. 發佈到 Docker Hub
+
+每次 push 到 `main`，GitHub Actions 會建置 `linux/amd64` + `linux/arm64` 映像並推送。
+在你的 repo 加兩個 Secrets（**Settings → Secrets and variables → Actions**）：
+
+| Secret | 內容 |
+|---|---|
+| `DOCKERHUB_USERNAME` | Docker Hub 帳號（`iamafreeride`） |
+| `DOCKERHUB_TOKEN` | Docker Hub **Access Token**（不是密碼；Account settings → Security → New Access Token，權限選 Read & Write） |
+
+沒設定這兩個 Secret 時，workflow 只推 GHCR、不會失敗。
+若你已在 Docker Hub 用「Automated build」關聯這個 GitHub repo，就不要兩邊同時建置，擇一即可。
+
+本機手動推（已 `docker login` 的話）：
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t iamafreeride/nikki4-webcheckin:latest --push .
+```
+
+Docker Hub 頁面的說明與圖標（Hub 不會自動讀 GitHub 的 README，所以要推一次）：
+
+```powershell
+./scripts/dockerhub-description.ps1 -Username iamafreeride -Token dckr_pat_xxx
 ```
 
 ### B. Windows 本機（不用 Docker）
