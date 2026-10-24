@@ -11,7 +11,7 @@ env:
   GHCR_IMAGE: ${{ github.repository }}
   # Set these two repository secrets to also publish to Docker Hub.
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_REPO: nikki4-webcheckin
+  DOCKERHUB_REPO: ${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
         run: |
           {
             echo "images<<EOF"
-            echo "ghcr.io/${GHCR_IMAGE}"
+            echo "ghcr.io/${GHCR_IMAGE,,}"
             if [ -n "${DOCKERHUB_USER}" ]; then
               echo "${DOCKERHUB_USER}/${DOCKERHUB_REPO}"
             fi
